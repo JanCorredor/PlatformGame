@@ -39,19 +39,24 @@ bool Map::Update(float dt)
 
         // L07 TODO 5: Prepare the loop to draw all tiles in a layer + DrawTexture()
         // iterate all tiles in a layer
-        for (const auto& mapLayer : mapData.layers) {
-            //L09 TODO 7: Check if the property Draw exist get the value, if it's true draw the lawyer
-            if (mapLayer->properties.GetProperty("Draw") != NULL && mapLayer->properties.GetProperty("Draw")->value == true) {
-				for (int i = 0; i < mapData.height; i++) {
-					for (int j = 0; j < mapData.width; j++) {
-						// L07 TODO 9: Complete the draw function
+        for (const auto& mapLayer : mapData.layers) 
+        {
+            if (mapLayer->properties.GetProperty("Draw") != NULL and mapLayer->properties.GetProperty("Draw")->value)
+            {
+                for (int i = 0; i < mapData.height; i++) 
+                {
+                    for (int j = 0; j < mapData.width; j++) 
+                    {
+                        // L07 TODO 9: Complete the draw function
+                    
                         //Get the gid from tile
                         int gid = mapLayer->Get(i, j);
 
                         //Check if the gid is different from 0 - some tiles are empty
                         if (gid != 0) {
                             //L09: TODO 3: Obtain the tile set using GetTilesetFromTileId
-                            TileSet* tileSet = mapData.tilesets.front();
+                            TileSet* tileSet = GetTilesetFromTileId(gid);
+
                             if (tileSet != nullptr) {
                                 //Get the Rect from the tileSetTexture;
                                 SDL_Rect tileRect = tileSet->GetRect(gid);
@@ -73,9 +78,13 @@ bool Map::Update(float dt)
 // L09: TODO 2: Implement function to the Tileset based on a tile id
 TileSet* Map::GetTilesetFromTileId(int gid) const
 {
-	TileSet* set = nullptr;
-
-    return set;
+    for (const auto& tileset : mapData.tilesets)
+    {
+        if (gid >= tileset->firstGid and gid < (tileset->firstGid + tileset->tileCount))
+        {
+            return tileset;
+        }
+    }
 }
 
 // Called before quitting
@@ -159,7 +168,7 @@ bool Map::Load(std::string path, std::string fileName)
             mapLayer->name = layerNode.attribute("name").as_string();
             mapLayer->width = layerNode.attribute("width").as_int();
             mapLayer->height = layerNode.attribute("height").as_int();
-
+            
             //L09: TODO 6 Call Load Layer Properties
             LoadProperties(layerNode, mapLayer->properties);
 
@@ -172,24 +181,50 @@ bool Map::Load(std::string path, std::string fileName)
             mapData.layers.push_back(mapLayer);
         }
 
+        for (pugi::xml_node objectGroupNode = mapFileXML.child("map").child("objectgroup"); objectGroupNode != NULL; objectGroupNode = objectGroupNode.next_sibling("objectgroup")) {
+
+            // L07: TODO 4: Implement the load of a single layer 
+            //Load the attributes and saved in a new MapLayer
+            ObjectGroup* objectgroup = new ObjectGroup();
+
+            for (pugi::xml_node objectNode = objectGroupNode.child("object"); objectNode != NULL; objectNode = objectNode.next_sibling("object")) {
+                ObjectGroup::Object* o = new ObjectGroup::Object;
+                o->id = objectNode.attribute("id").as_int();
+                o->x = objectNode.attribute("x").as_float();
+                o->y = objectNode.attribute("y").as_float();
+                o->width = objectNode.attribute("width").as_float();
+                o->height = objectNode.attribute("height").as_float();
+                objectgroup->objects.push_back(o);
+            }
+
+            LoadProperties(objectGroupNode, objectgroup->properties);
+
+            //add the layer to the map
+            mapData.objectGroups.push_back(objectgroup);
+        }
+
         // L08 TODO 3: Create colliders
         // L08 TODO 7: Assign collider type
         // Later you can create a function here to load and create the colliders from the map
-
-        //Iterate the layer and create colliders
-        for (const auto& mapLayer : mapData.layers) {
-            if (mapLayer->name == "Collisions") {
-                for (int i = 0; i < mapData.height; i++) {
-                    for (int j = 0; j < mapData.width; j++) {
-                        int gid = mapLayer->Get(i, j);
-                        if (gid == 49) {
-                            Vector2D mapCoord = MapToWorld(i, j);
-                            PhysBody* c1 = Engine::GetInstance().physics.get()->CreateRectangle(mapCoord.getX()+ mapData.tileWidth/2, mapCoord.getY()+ mapData.tileHeight/2, mapData.tileWidth, mapData.tileHeight, STATIC);
-                            c1->ctype = ColliderType::PLATFORM;
-                        }
-                    }
+        for (const auto& objectsGroups : mapData.objectGroups)
+        {
+            if (objectsGroups->properties.GetProperty("Square") != NULL and objectsGroups->properties.GetProperty("Square")->value)
+            {
+                for (const auto& obj : objectsGroups->objects)
+                {
+                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateRectangle(obj->x + obj->width/2, obj->y + obj->height/2, obj->width, obj->height, STATIC);
+                    collider->ctype = ColliderType::PLATFORM;
                 }
             }
+            else if (objectsGroups->properties.GetProperty("Circle") != NULL and objectsGroups->properties.GetProperty("Circle")->value)
+            {
+                for (const auto& obj : objectsGroups->objects)
+                {
+                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateCircle(obj->x + obj->width / 2, obj->y + obj->height / 2, obj->width, STATIC);
+                    collider->ctype = ColliderType::PLATFORM;
+                }
+            }
+
         }
 
         ret = true;
@@ -242,20 +277,17 @@ Vector2D Map::MapToWorld(int i, int j) const
 // L09: TODO 6: Load a group of properties from a node and fill a list with it
 bool Map::LoadProperties(pugi::xml_node& node, Properties& properties)
 {
-    bool ret = false;
+    bool ret = true;
 
-    for (pugi::xml_node propertieNode = node.child("properties").child("property"); propertieNode; propertieNode = propertieNode.next_sibling("property"))
+    for (pugi::xml_node propertiesNode = node.child("properties").child("property"); propertiesNode != NULL; propertiesNode = propertiesNode.next_sibling("property"))
     {
-        Properties::Property* p = new Properties::Property();
-        p->name = propertieNode.attribute("name").as_string();
-        p->value = propertieNode.attribute("value").as_bool(); // (!!) I'm assuming that all values are bool !!
-
-        properties.propertyList.push_back(p);
+        Properties::Property* p = new Properties::Property;
+        p->name = propertiesNode.attribute("name").as_string();
+        p->value = propertiesNode.attribute("value").as_bool();
+        properties.propertiesList.push_back(p);
     }
 
     return ret;
 }
-
-
 
 

@@ -4,39 +4,43 @@
 #include <list>
 #include <vector>
 
+
+
+
 // L09: TODO 5: Add attributes to the property structure
 struct Properties
 {
     struct Property
     {
         std::string name;
-        bool value; //We assume that we are going to work only with bool for the moment
+        bool value;
     };
 
-    std::list<Property*> propertyList;
+    std::list<Property*> propertiesList;
 
-    ~Properties()
+    // L09: TODO 7: Implement a method to get the value of a custom property
+    Property* GetProperty(const std::string name)
     {
-        for (const auto& property : propertyList)
+        for (const auto& property : propertiesList)
         {
-            delete property;
-        }
-
-        propertyList.clear();
-    }
-
-    // L09: DONE 7: Method to ask for the value of a custom property
-    Property* GetProperty(const char* name)
-    {
-        for (const auto& property : propertyList) {
-            if (property->name == name) {
+            if (property->name == name)
+            {
                 return property;
             }
         }
-
-        return nullptr;
+        return NULL;
     }
 
+};
+
+struct ObjectGroup
+{
+    struct Object
+    {
+        int id, x, y, width, height;
+    };
+    std::list<Object*> objects;
+    Properties properties;
 };
 
 struct MapLayer
@@ -94,6 +98,8 @@ struct MapData
 	int tileWidth;
 	int tileHeight;
     std::list<TileSet*> tilesets;
+    std::list<ObjectGroup*> objectGroups;
+
 
     // L07: TODO 2: Add the info to the MapLayer Struct
     std::list<MapLayer*> layers;
