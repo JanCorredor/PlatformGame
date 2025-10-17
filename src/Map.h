@@ -4,7 +4,7 @@
 #include <list>
 #include <vector>
 
-
+#include <box2d/box2d.h>
 
 
 // L09: TODO 5: Add attributes to the property structure
@@ -37,7 +37,8 @@ struct ObjectGroup
 {
     struct Object
     {
-        int id, x, y, width, height;
+        float id, x, y, width, height;
+        std::vector<b2Vec2> points;
     };
     std::list<Object*> objects;
     Properties properties;
@@ -48,8 +49,8 @@ struct MapLayer
     // L07: TODO 1: Add the info to the MapLayer Struct
     int id;
     std::string name;
-    int width;
-    int height;
+    float width;
+    float height;
     std::vector<int> tiles;
     Properties properties;
 

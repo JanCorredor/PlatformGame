@@ -194,12 +194,35 @@ bool Map::Load(std::string path, std::string fileName)
                 o->y = objectNode.attribute("y").as_float();
                 o->width = objectNode.attribute("width").as_float();
                 o->height = objectNode.attribute("height").as_float();
+
+                if (objectNode.child("polygon").attribute("points") != NULL)
+                {
+                   std::string pointString = objectNode.child("polygon").attribute("points").as_string();
+                   size_t start = 0;
+
+                   while (start < pointString.length()) 
+                   {
+                       size_t end = pointString.find(' ', start);
+                       if (end == std::string::npos) { end = pointString.length(); }
+
+                       std::string pair = pointString.substr(start, end - start);
+                       size_t comma = pair.find(',');
+
+                       if (comma != std::string::npos) 
+                       {
+                           b2Vec2 pointPos = { stoi(pair.substr(0, comma))+o->x,  stoi(pair.substr(comma + 1)) + o->y};
+                           o->points.push_back(pointPos);
+                       }
+
+                       start = end + 1;
+                   }
+                }
                 objectgroup->objects.push_back(o);
             }
 
             LoadProperties(objectGroupNode, objectgroup->properties);
 
-            //add the layer to the map
+            //Add the layer to the map
             mapData.objectGroups.push_back(objectgroup);
         }
 
@@ -221,6 +244,20 @@ bool Map::Load(std::string path, std::string fileName)
                 for (const auto& obj : objectsGroups->objects)
                 {
                     PhysBody* collider = Engine::GetInstance().physics.get()->CreateCircle(obj->x + obj->width / 2, obj->y + obj->height / 2, obj->width, STATIC);
+                    collider->ctype = ColliderType::PLATFORM;
+                }
+            }
+            else if(objectsGroups->properties.GetProperty("Triangle") != NULL and objectsGroups->properties.GetProperty("Triangle")->value)
+            {
+                for (const auto& obj : objectsGroups->objects)
+                {
+                    int* points = new int[obj->points.size() * 2];
+                    for (size_t i = 0; i < obj->points.size(); i++)
+                    {
+                        points[i * 2] = obj->points[i].x;
+                        points[i * 2 + 1] = obj->points[i].y;
+                    }
+                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateChain(obj->x, obj->y, points, obj->points.size(), STATIC);
                     collider->ctype = ColliderType::PLATFORM;
                 }
             }
