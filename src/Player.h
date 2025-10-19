@@ -32,6 +32,7 @@ private:
 	void GetPhysicsValues();
 	void Move();
 	void Jump();
+	void Dash();
 	void ApplyPhysics();
 	void Draw(float dt);
 
@@ -50,6 +51,9 @@ public:
 	PhysBody* pbody;
 	float jumpForce = 2.5f; // The force to apply when jumping
 	bool isJumping = false; // Flag to check if the player is currently jumping
+	float dashForce = 200.0f;
+	bool hasDashed = false; // Flag to check if the player has dashed
+	bool playerDirection = true; //False Left -- True Right 
 
 private: 
 	b2Vec2 velocity;

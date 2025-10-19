@@ -21,7 +21,7 @@ Player::~Player() {
 bool Player::Awake() {
 
 	//L03: TODO 2: Initialize Player parameters
-	position = Vector2D(96, 96);
+	position = Vector2D(32, 192*3);
 	return true;
 }
 
@@ -58,6 +58,7 @@ bool Player::Update(float dt)
 	GetPhysicsValues();
 	Move();
 	Jump();
+	Dash();
 	ApplyPhysics();
 	Draw(dt);
 
@@ -67,18 +68,20 @@ bool Player::Update(float dt)
 void Player::GetPhysicsValues() {
 	// Read current velocity
 	velocity = Engine::GetInstance().physics->GetLinearVelocity(pbody);
-	velocity = { 0, velocity.y }; // Reset horizontal velocity by default, this way the player stops when no key is pressed
+	velocity = { velocity.x/10, velocity.y }; // Reset horizontal velocity by default, this way the player stops when no key is pressed
 }
 
 void Player::Move() {
 	
 	// Move left/right
 	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT) {
-		velocity.x = -speed;
+		velocity.x += -speed;
+		playerDirection = false;
 		anims.SetCurrent("move");
 	}
 	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT) {
-		velocity.x = speed;
+		velocity.x += speed;
+		playerDirection = true;
 		anims.SetCurrent("move");
 	}
 }
@@ -91,6 +94,26 @@ void Player::Jump() {
 		isJumping = true;
 	}
 }
+
+void Player::Dash() 
+{
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_Q) == KEY_DOWN && hasDashed == false)  //SDL_SCANCODE_LSHIFT
+	{
+		float dash;
+		if (playerDirection == false)
+		{
+			dash = -dashForce;
+		}
+		else
+		{
+			dash = dashForce;
+		}
+		velocity.x += dash;
+		//Engine::GetInstance().physics->ApplyLinearImpulseToCenter(pbody, dash, 0.0f);
+		hasDashed = true;
+	}
+}
+
 
 void Player::ApplyPhysics() {
 	// Preserve vertical speed while jumping
@@ -130,6 +153,7 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		LOG("Collision PLATFORM");
 		//reset the jump flag when touching the ground
 		isJumping = false;
+		hasDashed = false;
 		anims.SetCurrent("idle");
 		break;
 	case ColliderType::ITEM:

@@ -252,12 +252,13 @@ bool Map::Load(std::string path, std::string fileName)
                 for (const auto& obj : objectsGroups->objects)
                 {
                     int* points = new int[obj->points.size() * 2];
+
                     for (size_t i = 0; i < obj->points.size(); i++)
                     {
                         points[i * 2] = obj->points[i].x;
                         points[i * 2 + 1] = obj->points[i].y;
                     }
-                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateChain(obj->x, obj->y, points, obj->points.size(), STATIC);
+                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateChain(obj->x, obj->y, points, obj->points.size()*2, STATIC);
                     collider->ctype = ColliderType::PLATFORM;
                 }
             }
