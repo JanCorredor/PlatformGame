@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="11" nextobjectid="75">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="11" nextobjectid="79">
  <properties>
   <property name="Draw" type="bool" value="true"/>
  </properties>
@@ -757,10 +757,10 @@
    <tile/>
    <tile/>
    <tile/>
-   <tile/>
-   <tile/>
-   <tile/>
-   <tile/>
+   <tile gid="77"/>
+   <tile gid="2684354637"/>
+   <tile gid="3221225549"/>
+   <tile gid="1610612813"/>
    <tile/>
    <tile/>
    <tile/>
@@ -998,7 +998,7 @@
    <tile/>
    <tile/>
    <tile gid="39"/>
-   <tile gid="2147483687"/>
+   <tile gid="38"/>
    <tile/>
    <tile/>
    <tile/>
@@ -1027,7 +1027,7 @@
    <tile/>
    <tile/>
    <tile/>
-   <tile gid="1073741863"/>
+   <tile gid="3221225510"/>
    <tile gid="3221225511"/>
    <tile/>
    <tile/>
@@ -1063,7 +1063,7 @@
    <tile/>
    <tile/>
    <tile/>
-   <tile gid="1073741863"/>
+   <tile gid="3221225510"/>
    <tile gid="3221225511"/>
    <tile/>
    <tile/>
@@ -1189,9 +1189,9 @@
    <tile/>
    <tile/>
    <tile/>
-   <tile/>
-   <tile/>
-   <tile/>
+   <tile gid="2684354635"/>
+   <tile gid="2684354635"/>
+   <tile gid="2684354635"/>
    <tile/>
    <tile/>
    <tile/>
@@ -1502,7 +1502,7 @@
    <tile/>
    <tile/>
    <tile/>
-   <tile/>
+   <tile gid="3221225503"/>
    <tile/>
    <tile/>
    <tile/>
@@ -2502,8 +2502,8 @@
   <object id="73" x="0" y="320">
    <polygon points="0,0 128,0 192,0 192,96 128,64 64,32"/>
   </object>
-  <object id="74" x="256" y="352">
-   <polygon points="0,0 64,-32 0,-64 0,-32"/>
+  <object id="78" x="256" y="288">
+   <polygon points="0,0 64,32 0,64 0,32"/>
   </object>
  </objectgroup>
  <objectgroup id="9" name="DeathSquareHitboxes">

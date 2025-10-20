@@ -8,6 +8,7 @@
 #include "Log.h"
 #include "Physics.h"
 #include "EntityManager.h"
+#include "Map.h"
 
 Player::Player() : Entity(EntityType::PLAYER)
 {
@@ -62,6 +63,14 @@ bool Player::Update(float dt)
 	ApplyPhysics();
 	Draw(dt);
 
+	//float limitLeft = Engine::GetInstance().render->camera.w / 4;  //POR HACER
+	//float limitRight = Engine::GetInstance().map->GetMapSizeInPixels().getX() - Engine::GetInstance().render->camera.w * 3 / 4;
+	////L10: TODO 7: Center the camera on the player
+	//if (position.getX() - limitLeft > 0 and position.getX() < limitRight)
+	//{
+	//	Engine::GetInstance().render->camera.x = -position.getX() + Engine::GetInstance().render->camera.w / 4;
+	//}
+
 	return true;
 }
 
@@ -97,7 +106,7 @@ void Player::Jump() {
 
 void Player::Dash() 
 {
-	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_Q) == KEY_DOWN && hasDashed == false)  //SDL_SCANCODE_LSHIFT
+	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_LSHIFT) == KEY_DOWN && hasDashed == false)  //SDL_SCANCODE_LSHIFT
 	{
 		float dash;
 		if (playerDirection == false)

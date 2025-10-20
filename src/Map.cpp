@@ -53,7 +53,30 @@ bool Map::Update(float dt)
                         int gid = mapLayer->Get(i, j);
 
                         //Check if the gid is different from 0 - some tiles are empty
-                        if (gid != 0) {
+                        if (gid != 0) 
+                        {
+                            float rotation = 0;
+                            if (gid > 3221225472) { // if the tile was rotated 180º
+                                gid -= 3221225472;
+                                rotation = 180;
+                                //context.translate(colSource * 32 + pos.X + 32, rowSource * 32 + pos.Y + 32);
+                                //context.rotate(180 * Math.PI / 180);
+                            }
+                            else if (gid > 2147483724) { //if the tile was rotated 90º
+                                gid -= 2147483724;
+                                rotation = 90;
+                                //context.translate(colSource * 32 + pos.X + 32, rowSource * 32 + pos.Y);
+                                //context.rotate(90 * Math.PI / 180);
+                            }
+                            else if (gid > 1610612736) { //if the tile was rotated 270º
+                                gid -= 1610612736;
+                                rotation = 270;
+                                //context.translate(colSource * 32 + pos.X, rowSource * 32 + pos.Y + 32);
+                                //context.rotate(270 * Math.PI / 180);
+
+                            }
+
+
                             //L09: TODO 3: Obtain the tile set using GetTilesetFromTileId
                             TileSet* tileSet = GetTilesetFromTileId(gid);
 
@@ -63,7 +86,7 @@ bool Map::Update(float dt)
                                 //Get the screen coordinates from the tile coordinates
                                 Vector2D mapCoord = MapToWorld(i, j);
                                 //Draw the texture
-                                Engine::GetInstance().render->DrawTexture(tileSet->texture, (int)mapCoord.getX(), (int)mapCoord.getY(), &tileRect);
+                                Engine::GetInstance().render->DrawTexture(tileSet->texture, (int)mapCoord.getX(), (int)mapCoord.getY(), &tileRect, 0, rotation);
                             }
                         }
                     }
@@ -243,7 +266,7 @@ bool Map::Load(std::string path, std::string fileName)
             {
                 for (const auto& obj : objectsGroups->objects)
                 {
-                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateCircle(obj->x + obj->width / 2, obj->y + obj->height / 2, obj->width, STATIC);
+                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateCircle(obj->x + obj->width / 2, obj->y + obj->height / 2, obj->width/2, STATIC);
                     collider->ctype = ColliderType::PLATFORM;
                 }
             }
@@ -253,12 +276,12 @@ bool Map::Load(std::string path, std::string fileName)
                 {
                     int* points = new int[obj->points.size() * 2];
 
-                    for (size_t i = 0; i < obj->points.size(); i++)
+                    for (size_t i = 0; i < obj->points.size(); i++) //POR HACER AJUSTAR POSICIONES DEL TODO
                     {
                         points[i * 2] = obj->points[i].x;
                         points[i * 2 + 1] = obj->points[i].y;
                     }
-                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateChain(obj->x, obj->y, points, obj->points.size()*2, STATIC);
+                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateChain(PIXEL_TO_METERS(obj->x/2), PIXEL_TO_METERS(obj->y/2), points, obj->points.size()*2, STATIC);
                     collider->ctype = ColliderType::PLATFORM;
                 }
             }
@@ -328,4 +351,11 @@ bool Map::LoadProperties(pugi::xml_node& node, Properties& properties)
     return ret;
 }
 
+Vector2D Map::GetMapSizeInPixels()
+{
+    Vector2D sizeInPixels;
+    sizeInPixels.setX((float)(mapData.width * mapData.tileWidth));
+    sizeInPixels.setY((float)(mapData.height * mapData.tileHeight));
+    return sizeInPixels;
+}
 

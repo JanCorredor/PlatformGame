@@ -139,6 +139,8 @@ public:
     // L09: TODO 6: Load a group of properties 
     bool LoadProperties(pugi::xml_node& node, Properties& properties);
 
+    Vector2D GetMapSizeInPixels();
+
 public: 
     std::string mapFileName;
     std::string mapPath;
