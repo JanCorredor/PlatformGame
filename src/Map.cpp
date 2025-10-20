@@ -50,43 +50,70 @@ bool Map::Update(float dt)
                         // L07 TODO 9: Complete the draw function
                     
                         //Get the gid from tile
-                        int gid = mapLayer->Get(i, j);
+                        uint32_t gid = mapLayer->Get(i, j);
 
                         //Check if the gid is different from 0 - some tiles are empty
                         if (gid != 0) 
                         {
-                            float rotation = 0;
-                            if (gid > 3221225472) { // if the tile was rotated 180º
-                                gid -= 3221225472;
-                                rotation = 180;
-                                //context.translate(colSource * 32 + pos.X + 32, rowSource * 32 + pos.Y + 32);
-                                //context.rotate(180 * Math.PI / 180);
-                            }
-                            else if (gid > 2147483724) { //if the tile was rotated 90º
-                                gid -= 2147483724;
-                                rotation = 90;
-                                //context.translate(colSource * 32 + pos.X + 32, rowSource * 32 + pos.Y);
-                                //context.rotate(90 * Math.PI / 180);
-                            }
-                            else if (gid > 1610612736) { //if the tile was rotated 270º
-                                gid -= 1610612736;
-                                rotation = 270;
-                                //context.translate(colSource * 32 + pos.X, rowSource * 32 + pos.Y + 32);
-                                //context.rotate(270 * Math.PI / 180);
+                            // Decode flip flags from GID
+                            const uint32_t FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
+                            const uint32_t FLIPPED_VERTICALLY_FLAG = 0x40000000;
+                            const uint32_t FLIPPED_DIAGONALLY_FLAG = 0x20000000;
+                            const uint32_t TILE_ID_MASK = 0x1FFFFFFF;
 
-                            }
+                            //Get Flip Variables and Correct Tile GID
+                            bool flipH = (gid & FLIPPED_HORIZONTALLY_FLAG) != 0;
+                            bool flipV = (gid & FLIPPED_VERTICALLY_FLAG) != 0;
+                            bool flipD = (gid & FLIPPED_DIAGONALLY_FLAG) != 0;
+                            uint32_t tileId = gid & TILE_ID_MASK; 
 
+                            // Determine rotation and final horizontal flip
+                            float rotation = 0.0f;
+                            SDL_FlipMode sdlFlip = SDL_FLIP_NONE;
+
+                            if (!flipD) 
+                            {
+                                if (flipH && flipV) { rotation = 180.0f;}
+                                else if (flipH) { sdlFlip = SDL_FLIP_HORIZONTAL;}
+                                else if (flipV) { sdlFlip = SDL_FLIP_VERTICAL; }
+                            }
+                            else // Diagonal Flip  == True
+                            { 
+                                if (!flipH && !flipV) { rotation = 90.0f; sdlFlip = SDL_FLIP_HORIZONTAL; }
+                                else if (flipH && !flipV) { rotation = 90.0f;}
+                                else if (!flipH && flipV) { rotation = 270.0f;}
+                                else if (flipH && flipV) { rotation = 270.0f; sdlFlip = SDL_FLIP_HORIZONTAL;}
+                            }
 
                             //L09: TODO 3: Obtain the tile set using GetTilesetFromTileId
-                            TileSet* tileSet = GetTilesetFromTileId(gid);
+                            TileSet* tileSet = GetTilesetFromTileId(tileId);
 
                             if (tileSet != nullptr) {
                                 //Get the Rect from the tileSetTexture;
-                                SDL_Rect tileRect = tileSet->GetRect(gid);
+                                SDL_FRect tileRect;
+                                tileRect.x = tileSet->GetRect(tileId).x;
+                                tileRect.y = tileSet->GetRect(tileId).y;
+                                tileRect.w = tileSet->GetRect(tileId).w;
+                                tileRect.h = tileSet->GetRect(tileId).h;
+
                                 //Get the screen coordinates from the tile coordinates
                                 Vector2D mapCoord = MapToWorld(i, j);
+
+                                // Center point for rotation
+                                SDL_FPoint center = { tileRect.w / 2, tileRect.h / 2 };
+
+                                // Destination rectangle
+                                SDL_FRect dstRect = {
+                                    (int)mapCoord.getX(),
+                                    (int)mapCoord.getY(),
+                                    tileRect.w,
+                                    tileRect.h
+                                };
+
+
                                 //Draw the texture
-                                Engine::GetInstance().render->DrawTexture(tileSet->texture, (int)mapCoord.getX(), (int)mapCoord.getY(), &tileRect, 0, rotation);
+                                SDL_RenderTextureRotated(Engine::GetInstance().render->renderer, tileSet->texture, &tileRect, &dstRect, rotation, &center, sdlFlip);
+                                //Engine::GetInstance().render->DrawTexture(tileSet->texture, (int)mapCoord.getX(), (int)mapCoord.getY(), &tileRect, 0, rotation);
                             }
                         }
                     }
@@ -197,7 +224,7 @@ bool Map::Load(std::string path, std::string fileName)
 
             //Iterate over all the tiles and assign the values in the data array
             for (pugi::xml_node tileNode = layerNode.child("data").child("tile"); tileNode != NULL; tileNode = tileNode.next_sibling("tile")) {
-                mapLayer->tiles.push_back(tileNode.attribute("gid").as_int());
+                mapLayer->tiles.push_back(tileNode.attribute("gid").as_uint());
             }
 
             //add the layer to the map
@@ -276,7 +303,7 @@ bool Map::Load(std::string path, std::string fileName)
                 {
                     int* points = new int[obj->points.size() * 2];
 
-                    for (size_t i = 0; i < obj->points.size(); i++) //POR HACER AJUSTAR POSICIONES DEL TODO
+                    for (size_t i = 0; i < obj->points.size(); i++)
                     {
                         points[i * 2] = obj->points[i].x;
                         points[i * 2 + 1] = obj->points[i].y;

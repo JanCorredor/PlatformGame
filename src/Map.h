@@ -51,11 +51,11 @@ struct MapLayer
     std::string name;
     float width;
     float height;
-    std::vector<int> tiles;
+    std::vector<uint32_t> tiles;
     Properties properties;
 
     // L07: TODO 6: Short function to get the gid value of i,j
-    unsigned int Get(int i, int j) const
+    uint32_t Get(int i, int j) const
     {
         return tiles[(i * width) + j];
     }
