@@ -61,15 +61,16 @@ bool Player::Update(float dt)
 	Jump();
 	Dash();
 	ApplyPhysics();
-	Draw(dt);
 
-	//float limitLeft = Engine::GetInstance().render->camera.w / 4;  //POR HACER
-	//float limitRight = Engine::GetInstance().map->GetMapSizeInPixels().getX() - Engine::GetInstance().render->camera.w * 3 / 4;
-	////L10: TODO 7: Center the camera on the player
-	//if (position.getX() - limitLeft > 0 and position.getX() < limitRight)
-	//{
-	//	Engine::GetInstance().render->camera.x = -position.getX() + Engine::GetInstance().render->camera.w / 4;
-	//}
+	float limitLeft = Engine::GetInstance().render->camera.w / 4; 
+	float limitRight = Engine::GetInstance().map->GetMapSizeInPixels().getX() - Engine::GetInstance().render->camera.w * 3 / 4;
+	//L10: TODO 7: Center the camera on the player
+	if (position.getX() - limitLeft > 0 and position.getX() < limitRight)
+	{
+		Engine::GetInstance().render->camera.x = -position.getX() + Engine::GetInstance().render->camera.w / 4;
+	}
+
+	Draw(dt);
 
 	return true;
 }

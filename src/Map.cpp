@@ -89,6 +89,7 @@ bool Map::Update(float dt)
                             TileSet* tileSet = GetTilesetFromTileId(tileId);
 
                             if (tileSet != nullptr) {
+
                                 //Get the Rect from the tileSetTexture;
                                 SDL_FRect tileRect;
                                 tileRect.x = tileSet->GetRect(tileId).x;
@@ -110,6 +111,9 @@ bool Map::Update(float dt)
                                     tileRect.h
                                 };
 
+                                //Camera
+                                dstRect.x += Engine::GetInstance().render->camera.x;
+                                dstRect.y += Engine::GetInstance().render->camera.y;
 
                                 //Draw the texture
                                 SDL_RenderTextureRotated(Engine::GetInstance().render->renderer, tileSet->texture, &tileRect, &dstRect, rotation, &center, sdlFlip);
