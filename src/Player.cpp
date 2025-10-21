@@ -140,11 +140,41 @@ void Player::Draw(float dt) {
 	anims.Update(dt);
 	const SDL_Rect& animFrame = anims.GetCurrentFrame();
 
+
+
 	// Update render position using your PhysBody helper
 	int x, y;
 	pbody->GetPosition(x, y);
 	position.setX((float)x);
 	position.setY((float)y);
+
+	if (hasDashed)
+	{
+		Uint8* r = new Uint8; Uint8* g = new Uint8; Uint8* b = new Uint8; SDL_GetTextureColorMod(texture, r, g, b); //Get original texture RGB
+		SDL_SetTextureColorMod(texture, 255, 0, 0); //Set to X color 
+		int dashX = x - texW / 2;
+		int dashY = y - texH / 2;
+		if (playerDirection)
+		{
+			dashX -= speed * 2; //Cambiar
+		}
+		else
+		{
+			dashX += speed * 2;
+		}
+		if (Engine::GetInstance().physics->GetYVelocity(pbody) > 0)
+		{
+			dashY -= Engine::GetInstance().physics->GetYVelocity(pbody);
+		}
+		else
+		{
+			dashY += Engine::GetInstance().physics->GetYVelocity(pbody);
+		}
+
+		Engine::GetInstance().render->DrawTexture(texture, dashX, dashY, &animFrame);
+		SDL_SetTextureColorMod(texture, *r, *g, *b);
+	}
+
 	Engine::GetInstance().render->DrawTexture(texture, x - texW / 2, y - texH / 2, &animFrame);
 }
 
