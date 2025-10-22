@@ -266,6 +266,11 @@ bool Player::CleanUp()
 void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	switch (physB->ctype)
 	{
+	case ColliderType::CHECKPOINT:
+		spawnPoint = position;
+		LOG("Collision Checkpoint");
+		physB->~PhysBody();
+		break;
 	case ColliderType::PLATFORM:
 		LOG("Collision PLATFORM");
 		//reset the jump flag when touching the ground

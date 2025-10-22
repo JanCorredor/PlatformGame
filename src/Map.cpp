@@ -289,11 +289,23 @@ bool Map::Load(std::string path, std::string fileName)
             {
                 for (const auto& obj : objectsGroups->objects)
                 {
-                    PhysBody* collider = Engine::GetInstance().physics.get()->CreateRectangle(obj->x + obj->width/2, obj->y + obj->height/2, obj->width, obj->height, STATIC);
+                    PhysBody* collider;
+                    if (objectsGroups->properties.GetProperty("Sensor") != NULL and objectsGroups->properties.GetProperty("Sensor")->value)
+                    {
+                        collider = Engine::GetInstance().physics.get()->CreateRectangleSensor(obj->x + obj->width / 2, obj->y + obj->height / 2, obj->width, obj->height, STATIC);
+                    }
+                    else
+                    {
+                        collider = Engine::GetInstance().physics.get()->CreateRectangle(obj->x + obj->width / 2, obj->y + obj->height / 2, obj->width, obj->height, STATIC);
+                    }
+
                     if (objectsGroups->properties.GetProperty("Danger") != NULL and objectsGroups->properties.GetProperty("Danger")->value)
                     {
                         collider->ctype = ColliderType::TRAP;
-
+                    }
+                    else if (objectsGroups->properties.GetProperty("Checkpoint") != NULL and objectsGroups->properties.GetProperty("Checkpoint")->value)
+                    {
+                        collider->ctype = ColliderType::CHECKPOINT;
                     }
                     else
                     {
