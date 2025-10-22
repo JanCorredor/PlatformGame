@@ -7,6 +7,7 @@ enum class EntityType
 {
 	PLAYER,
 	ITEM,
+	ENEMY,
 	UNKNOWN
 };
 
@@ -70,6 +71,8 @@ public:
 
 	};
 
+	virtual void Death() {};
+
 public:
 
 	std::string name;
@@ -78,6 +81,7 @@ public:
 
 	// Possible properties, it depends on how generic we
 	// want our Entity class, maybe it's not renderable...
+	Vector2D spawnPoint;
 	Vector2D position;       
 	bool renderable = true;
 };

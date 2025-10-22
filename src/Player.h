@@ -35,8 +35,10 @@ private:
 	void Dash();
 	void ApplyPhysics();
 	void Draw(float dt);
-
+	void CameraFollows();
+	void Death() override;
 public:
+	bool godMode = false;
 
 	//Declare player parameters
 	float speed = 4.0f;

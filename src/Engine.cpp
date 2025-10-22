@@ -131,6 +131,13 @@ bool Engine::Update() {
     bool ret = true;
     PrepareUpdate();
 
+    // F11 Enable/Disable FPS cap to 30
+    if (input->GetKey(SDL_SCANCODE_F11) == KEY_DOWN)
+    {
+        if (targetFrameRate == 60) { targetFrameRate = 30;}
+        else { targetFrameRate = 60; }
+    }
+
     if (input->GetWindowEvent(WE_QUIT) == true)
         ret = false;
 
@@ -214,14 +221,29 @@ void Engine::FinishUpdate()
         lastSecFrameCount = 0;
     }
 
+    //VsyncText
+    std::string vtext;
+    if (render->GetVSync())
+    {
+        vtext = "On";
+    }
+    else
+    {
+        vtext = "Off";
+    }
+
     // Shows the time measurements in the window title
     // check sprintf formats here https://cplusplus.com/reference/cstdio/printf/
     std::stringstream ss;
-    ss << gameTitle << ": Av.FPS: " << std::fixed << std::setprecision(2) << averageFps
-        << " Last sec frames: " << framesPerSecond
-        << " Last dt: " << std::fixed << std::setprecision(3) << dt
-        << " Time since startup: " << secondsSinceStartup
-        << " Frame Count: " << frameCount;
+    ss << gameTitle
+        << " FPS: " << framesPerSecond
+        << " Av.FPS: " << std::fixed << std::setprecision(2) << averageFps
+        << " Last-frame MS: " << std::fixed << std::setprecision(3) << dt
+        << " V-Sync: " << vtext
+
+        //<< " Time since startup: " << secondsSinceStartup
+        //<< " Frame Count: " << frameCount
+        ;
 
     std::string titleStr = ss.str();
 

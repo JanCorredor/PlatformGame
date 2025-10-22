@@ -290,7 +290,15 @@ bool Map::Load(std::string path, std::string fileName)
                 for (const auto& obj : objectsGroups->objects)
                 {
                     PhysBody* collider = Engine::GetInstance().physics.get()->CreateRectangle(obj->x + obj->width/2, obj->y + obj->height/2, obj->width, obj->height, STATIC);
-                    collider->ctype = ColliderType::PLATFORM;
+                    if (objectsGroups->properties.GetProperty("Danger") != NULL and objectsGroups->properties.GetProperty("Danger")->value)
+                    {
+                        collider->ctype = ColliderType::TRAP;
+
+                    }
+                    else
+                    {
+                        collider->ctype = ColliderType::PLATFORM;
+                    }
                 }
             }
             else if (objectsGroups->properties.GetProperty("Circle") != NULL and objectsGroups->properties.GetProperty("Circle")->value)
@@ -298,7 +306,15 @@ bool Map::Load(std::string path, std::string fileName)
                 for (const auto& obj : objectsGroups->objects)
                 {
                     PhysBody* collider = Engine::GetInstance().physics.get()->CreateCircle(obj->x + obj->width / 2, obj->y + obj->height / 2, obj->width/2, STATIC);
-                    collider->ctype = ColliderType::PLATFORM;
+                    if (objectsGroups->properties.GetProperty("Danger") != NULL and objectsGroups->properties.GetProperty("Danger")->value)
+                    {
+                        collider->ctype = ColliderType::TRAP;
+
+                    }
+                    else
+                    {
+                        collider->ctype = ColliderType::PLATFORM;
+                    }
                 }
             }
             else if(objectsGroups->properties.GetProperty("Triangle") != NULL and objectsGroups->properties.GetProperty("Triangle")->value)
@@ -313,7 +329,15 @@ bool Map::Load(std::string path, std::string fileName)
                         points[i * 2 + 1] = obj->points[i].y;
                     }
                     PhysBody* collider = Engine::GetInstance().physics.get()->CreateChain(PIXEL_TO_METERS(obj->x/2), PIXEL_TO_METERS(obj->y/2), points, obj->points.size()*2, STATIC);
-                    collider->ctype = ColliderType::PLATFORM;
+                    if (objectsGroups->properties.GetProperty("Danger") != NULL and objectsGroups->properties.GetProperty("Danger")->value)
+                    {
+                        collider->ctype = ColliderType::TRAP;
+
+                    }
+                    else
+                    {
+                        collider->ctype = ColliderType::PLATFORM;
+                    }
                 }
             }
 

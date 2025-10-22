@@ -50,6 +50,7 @@ bool Render::Awake()
 			}
 			else
 			{
+				vsync = true;
 				LOG("Using vsync");
 			}
 		}

@@ -1,7 +1,7 @@
 <!-- Config file for the engine -->
 <config>
   <engine>
-    <title>My platformer game</title>
+    <title>Escape The Lab</title>
     <targetFrameRate value="60"/>
   </engine>
 

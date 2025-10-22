@@ -22,7 +22,8 @@ Player::~Player() {
 bool Player::Awake() {
 
 	//L03: TODO 2: Initialize Player parameters
-	position = Vector2D(32, 192*3);
+	spawnPoint = Vector2D(32, 192*3);
+	position = spawnPoint;
 	return true;
 }
 
@@ -56,19 +57,20 @@ bool Player::Start() {
 
 bool Player::Update(float dt)
 {
+	if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_F10) == KEY_DOWN) //Toggle Godmode
+	{
+		godMode = !godMode;
+	}
+
 	GetPhysicsValues();
 	Move();
+
+	CameraFollows();
+
 	Jump();
 	Dash();
-	ApplyPhysics();
 
-	float limitLeft = Engine::GetInstance().render->camera.w / 4; 
-	float limitRight = Engine::GetInstance().map->GetMapSizeInPixels().getX() - Engine::GetInstance().render->camera.w * 3 / 4;
-	//L10: TODO 7: Center the camera on the player
-	if (position.getX() - limitLeft > 0 and position.getX() < limitRight)
-	{
-		Engine::GetInstance().render->camera.x = -position.getX() + Engine::GetInstance().render->camera.w / 4;
-	}
+	ApplyPhysics();
 
 	Draw(dt);
 
@@ -78,22 +80,57 @@ bool Player::Update(float dt)
 void Player::GetPhysicsValues() {
 	// Read current velocity
 	velocity = Engine::GetInstance().physics->GetLinearVelocity(pbody);
-	velocity = { velocity.x/10, velocity.y }; // Reset horizontal velocity by default, this way the player stops when no key is pressed
+
+	// Reset horizontal velocity by default, this way the player stops when no key is pressed
+	if (godMode)
+	{
+		velocity = { 0,0 };
+	}
+	else
+	{
+		velocity = { velocity.x / 10, velocity.y };  // {0, velocity.y }
+	}
 }
 
 void Player::Move() {
 	
-	// Move left/right
-	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT) {
-		velocity.x += -speed;
-		playerDirection = false;
-		anims.SetCurrent("move");
+	if (!godMode)
+	{
+		// Move left/right
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT) {
+			velocity.x += -speed;
+			playerDirection = false;
+			anims.SetCurrent("move");
+		}
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT) {
+			velocity.x += speed;
+			playerDirection = true;
+			anims.SetCurrent("move");
+		}
 	}
-	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT) {
-		velocity.x += speed;
-		playerDirection = true;
-		anims.SetCurrent("move");
+	else
+	{
+		// Move left/right
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_A) == KEY_REPEAT) {
+			velocity.x += -speed;
+			playerDirection = false;
+			anims.SetCurrent("move");
+		}
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_D) == KEY_REPEAT) {
+			velocity.x += speed;
+			playerDirection = true;
+			anims.SetCurrent("move");
+		}
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_W) == KEY_REPEAT) {
+			velocity.y += -speed;
+			anims.SetCurrent("move");
+		}
+		if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_S) == KEY_REPEAT) {
+			velocity.y += speed;
+			anims.SetCurrent("move");
+		}
 	}
+
 }
 
 void Player::Jump() {
@@ -109,17 +146,28 @@ void Player::Dash()
 {
 	if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_LSHIFT) == KEY_DOWN && hasDashed == false)  //SDL_SCANCODE_LSHIFT
 	{
-		float dash;
+		float dashX;
 		if (playerDirection == false)
 		{
-			dash = -dashForce;
+			dashX = -dashForce;
 		}
 		else
 		{
-			dash = dashForce;
+			dashX = dashForce;
 		}
-		velocity.x += dash;
-		//Engine::GetInstance().physics->ApplyLinearImpulseToCenter(pbody, dash, 0.0f);
+		velocity.x += dashX;
+
+		//float dashY = 0;
+		//if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_W) == KEY_REPEAT) 
+		//{
+		//	dashY = dashForce/10;
+		//}
+		//if (Engine::GetInstance().input->GetKey(SDL_SCANCODE_S) == KEY_REPEAT)
+		//{
+		//	dashY = -dashForce/10;
+		//}
+		//velocity.y += dashY;
+
 		hasDashed = true;
 	}
 }
@@ -139,8 +187,6 @@ void Player::Draw(float dt) {
 
 	anims.Update(dt);
 	const SDL_Rect& animFrame = anims.GetCurrentFrame();
-
-
 
 	// Update render position using your PhysBody helper
 	int x, y;
@@ -178,6 +224,37 @@ void Player::Draw(float dt) {
 	Engine::GetInstance().render->DrawTexture(texture, x - texW / 2, y - texH / 2, &animFrame);
 }
 
+void Player::CameraFollows()
+{
+	float limitLeft = Engine::GetInstance().render->camera.w / 4;
+	float limitRight = Engine::GetInstance().map->GetMapSizeInPixels().getX() - Engine::GetInstance().render->camera.w * 3 / 4;
+	//L10: TODO 7: Center the camera on the player
+	if (position.getX() - limitLeft > 0 and position.getX() < limitRight)
+	{
+		Engine::GetInstance().render->camera.x = -position.getX() + Engine::GetInstance().render->camera.w / 4;
+	}
+	else if (position.getX() - limitLeft < 0)
+	{
+		Engine::GetInstance().render->camera.x = 0;
+	}
+	else if(Engine::GetInstance().map->GetMapSizeInPixels().getX() - position.getX() < Engine::GetInstance().render->camera.w)
+	{
+		Engine::GetInstance().render->camera.x = - Engine::GetInstance().map->GetMapSizeInPixels().getX() + Engine::GetInstance().render->camera.w;
+	}
+
+}
+
+void Player::Death()
+{
+	if (godMode == false)
+	{
+		b2Vec2 spawn = { PIXEL_TO_METERS(spawnPoint.getX()), PIXEL_TO_METERS(spawnPoint.getY()) };
+		b2Rot rota = {cos(pbody->GetRotation()),sin(pbody->GetRotation())};
+		b2Body_SetTransform(pbody->body, spawn, rota);
+		velocity = { 0,0 };
+	}
+}
+
 bool Player::CleanUp()
 {
 	LOG("Cleanup player");
@@ -200,6 +277,11 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		LOG("Collision ITEM");
 		Engine::GetInstance().audio->PlayFx(pickCoinFxId);
 		physB->listener->Destroy();
+		break;
+	case ColliderType::TRAP:
+	case ColliderType::ENEMY:
+ 		Death();
+		LOG("Player Death");
 		break;
 	case ColliderType::UNKNOWN:
 		LOG("Collision UNKNOWN");
