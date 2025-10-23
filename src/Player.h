@@ -39,7 +39,7 @@ private:
 	void Death() override;
 public:
 	bool godMode = false;
-
+	bool isDying = false;
 	//Declare player parameters
 	float speed = 4.0f;
 	SDL_Texture* texture = NULL;

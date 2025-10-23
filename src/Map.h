@@ -5,6 +5,7 @@
 #include <vector>
 
 #include <box2d/box2d.h>
+#include "Animation.h"
 
 
 // L09: TODO 5: Add attributes to the property structure
@@ -144,6 +145,7 @@ public:
 public: 
     std::string mapFileName;
     std::string mapPath;
+    int timeInFrameMs_ = 0;
 
 private:
     bool mapLoaded;

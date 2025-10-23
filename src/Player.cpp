@@ -30,12 +30,12 @@ bool Player::Awake() {
 bool Player::Start() {
 
 	// load
-	std::unordered_map<int, std::string> aliases = { {0,"idle"},{11,"move"},{22,"jump"} };
-	anims.LoadFromTSX("Assets/Textures/PLayer2_Spritesheet.tsx", aliases);
+	std::unordered_map<int, std::string> aliases = { {30,"idle"},{60,"move"}, { 85,"moveEffect" }, { 22,"jumpEffect" },{40,"jump"},{0,"jumpEffect"}, {20,"death"}};
+	anims.LoadFromTSX("Assets/Textures/playerSpritesheet.tsx", aliases);
 	anims.SetCurrent("idle");
 
 	//L03: TODO 2: Initialize Player parameters
-	texture = Engine::GetInstance().textures->Load("Assets/Textures/player2_spritesheet.png");
+	texture = Engine::GetInstance().textures->Load("Assets/Textures/playerSpritesheet.png");
 
 	// L08 TODO 5: Add physics to the player - initialize physics body
 	//Engine::GetInstance().textures->GetSize(texture, texW, texH);
@@ -57,20 +57,24 @@ bool Player::Start() {
 
 bool Player::Update(float dt)
 {
-	if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_F10) == KEY_DOWN) //Toggle Godmode
+	if (!isDying)
 	{
-		godMode = !godMode;
+		if (Engine::GetInstance().input.get()->GetKey(SDL_SCANCODE_F10) == KEY_DOWN) //Toggle Godmode
+		{
+			godMode = !godMode;
+		}
+
+		GetPhysicsValues();
+		Move();
+
+		CameraFollows();
+
+		Jump();
+		Dash();
+
+		ApplyPhysics();
 	}
 
-	GetPhysicsValues();
-	Move();
-
-	CameraFollows();
-
-	Jump();
-	Dash();
-
-	ApplyPhysics();
 
 	Draw(dt);
 
@@ -188,6 +192,13 @@ void Player::Draw(float dt) {
 	anims.Update(dt);
 	const SDL_Rect& animFrame = anims.GetCurrentFrame();
 
+	//Last Death Frame
+	if (animFrame.x == 224 && animFrame.y == 64)
+	{
+		Death();
+		isDying = false;
+	}
+
 	// Update render position using your PhysBody helper
 	int x, y;
 	pbody->GetPosition(x, y);
@@ -208,20 +219,29 @@ void Player::Draw(float dt) {
 		{
 			dashX += speed * 2;
 		}
-		if (Engine::GetInstance().physics->GetYVelocity(pbody) > 0)
+		if (Engine::GetInstance().physics->GetYVelocity(pbody) != 0)
 		{
 			dashY -= Engine::GetInstance().physics->GetYVelocity(pbody);
-		}
-		else
-		{
-			dashY += Engine::GetInstance().physics->GetYVelocity(pbody);
 		}
 
 		Engine::GetInstance().render->DrawTexture(texture, dashX, dashY, &animFrame);
 		SDL_SetTextureColorMod(texture, *r, *g, *b);
 	}
 
-	Engine::GetInstance().render->DrawTexture(texture, x - texW / 2, y - texH / 2, &animFrame);
+	const SDL_FRect& fanimFrame = { (float)animFrame.x, (float)animFrame.y, (float)animFrame.w, (float)animFrame.h };
+	//SDLFlip
+	SDL_FlipMode sdlFlip = SDL_FLIP_NONE;
+	if (!playerDirection)
+	{
+		sdlFlip = SDL_FLIP_HORIZONTAL;
+	}
+
+	b2Vec2 camerapos = { Engine::GetInstance().render->camera.x, Engine::GetInstance().render->camera.y };
+	SDL_FPoint center = { x - texW / 2, y - texH / 2 };
+	SDL_FRect dstRect = {position.getX() - texW / 2 + camerapos.x,position.getY() - texH / 2 + camerapos.y, texW,	texH};
+
+	SDL_RenderTextureRotated(Engine::GetInstance().render->renderer, texture, &fanimFrame, &dstRect, 0, &center, sdlFlip);
+
 }
 
 void Player::CameraFollows()
@@ -247,11 +267,13 @@ void Player::CameraFollows()
 void Player::Death()
 {
 	if (godMode == false)
-	{
+	{	
+		isJumping = false;
+		hasDashed = false;
 		b2Vec2 spawn = { PIXEL_TO_METERS(spawnPoint.getX()), PIXEL_TO_METERS(spawnPoint.getY()) };
 		b2Rot rota = {cos(pbody->GetRotation()),sin(pbody->GetRotation())};
 		b2Body_SetTransform(pbody->body, spawn, rota);
-		velocity = { 0,0 };
+		anims.SetCurrent("idle");
 	}
 }
 
@@ -274,9 +296,15 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 	case ColliderType::PLATFORM:
 		LOG("Collision PLATFORM");
 		//reset the jump flag when touching the ground
+
 		isJumping = false;
 		hasDashed = false;
-		anims.SetCurrent("idle");
+		if (!isDying)
+		{
+			anims.SetCurrent("idle");
+		}
+
+
 		break;
 	case ColliderType::ITEM:
 		LOG("Collision ITEM");
@@ -285,7 +313,13 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		break;
 	case ColliderType::TRAP:
 	case ColliderType::ENEMY:
- 		Death();
+		if (!isDying)
+		{
+			anims.SetCurrent("death");
+			isDying = true;
+			velocity = { 0,0 };
+		}
+
 		LOG("Player Death");
 		break;
 	case ColliderType::UNKNOWN:

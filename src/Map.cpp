@@ -34,6 +34,13 @@ bool Map::Start() {
 bool Map::Update(float dt)
 {
     bool ret = true;
+    bool animupdate = false;
+    timeInFrameMs_ += dt;
+    if (timeInFrameMs_ > 100)
+    {
+        animupdate = true;
+        timeInFrameMs_ = 0;
+    }
 
     if (mapLoaded) {
 
@@ -89,6 +96,23 @@ bool Map::Update(float dt)
                             TileSet* tileSet = GetTilesetFromTileId(tileId);
 
                             if (tileSet != nullptr) {
+
+                                if (mapLayer->properties.GetProperty("Animated") != NULL and mapLayer->properties.GetProperty("Animated")->value)
+                                {
+                                    
+                                    if (animupdate)
+                                    {
+                                        if (tileSet->firstGid + tileSet->tileCount >= tileId+1)
+                                        {
+                                            tileId++;
+                                        }
+                                        else
+                                        {
+                                            tileId = tileSet->firstGid;
+                                        }
+                                    }
+
+                                }
 
                                 //Get the Rect from the tileSetTexture;
                                 SDL_FRect tileRect;
