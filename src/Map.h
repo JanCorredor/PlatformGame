@@ -77,6 +77,8 @@ struct TileSet
     int columns;
     SDL_Texture* texture;
 
+    std::unordered_map<int, Animation> animations; // tileId -> Animation
+
     // L07: TODO 7: Implement the method that receives the gid and returns a Rect
     SDL_Rect GetRect(unsigned int gid) {
         SDL_Rect rect = { 0 };
@@ -145,7 +147,6 @@ public:
 public: 
     std::string mapFileName;
     std::string mapPath;
-    int timeInFrameMs_ = 0;
 
 private:
     bool mapLoaded;

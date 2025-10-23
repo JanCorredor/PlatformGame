@@ -193,10 +193,16 @@ void Player::Draw(float dt) {
 	const SDL_Rect& animFrame = anims.GetCurrentFrame();
 
 	//Last Death Frame
-	if (animFrame.x == 224 && animFrame.y == 64)
+	if (animFrame.x == 224 && animFrame.y == 64 && !godMode)
 	{
 		Death();
 		isDying = false;
+		anims.SetCurrent("idle");
+	}
+
+	if (velocity.x == 0 && isJumping == false && isDying == false)
+	{
+		anims.SetCurrent("idle");
 	}
 
 	// Update render position using your PhysBody helper
@@ -299,12 +305,6 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 
 		isJumping = false;
 		hasDashed = false;
-		if (!isDying)
-		{
-			anims.SetCurrent("idle");
-		}
-
-
 		break;
 	case ColliderType::ITEM:
 		LOG("Collision ITEM");
@@ -313,7 +313,7 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		break;
 	case ColliderType::TRAP:
 	case ColliderType::ENEMY:
-		if (!isDying)
+		if (!isDying && !godMode)
 		{
 			anims.SetCurrent("death");
 			isDying = true;

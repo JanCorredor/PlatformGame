@@ -8,6 +8,9 @@
 
 #include <math.h>
 
+#include "EntityManager.h"
+#include "Bullet.h"
+
 Map::Map() : Module(), mapLoaded(false)
 {
     name = "map";
@@ -34,16 +37,16 @@ bool Map::Start() {
 bool Map::Update(float dt)
 {
     bool ret = true;
-    bool animupdate = false;
-    timeInFrameMs_ += dt;
-    if (timeInFrameMs_ > 100)
-    {
-        animupdate = true;
-        timeInFrameMs_ = 0;
-    }
 
     if (mapLoaded) {
 
+        for (auto& tileset : mapData.tilesets)
+        {
+            for (auto it = tileset->animations.begin(); it != tileset->animations.end(); ++it)
+            {
+                it->second.Update(dt);
+            }
+        }
         // L07 TODO 5: Prepare the loop to draw all tiles in a layer + DrawTexture()
         // iterate all tiles in a layer
         for (const auto& mapLayer : mapData.layers) 
@@ -97,29 +100,36 @@ bool Map::Update(float dt)
 
                             if (tileSet != nullptr) {
 
-                                if (mapLayer->properties.GetProperty("Animated") != NULL and mapLayer->properties.GetProperty("Animated")->value)
-                                {
-                                    
-                                    if (animupdate)
-                                    {
-                                        if (tileSet->firstGid + tileSet->tileCount >= tileId+1)
-                                        {
-                                            tileId++;
-                                        }
-                                        else
-                                        {
-                                            tileId = tileSet->firstGid;
-                                        }
-                                    }
-
-                                }
 
                                 //Get the Rect from the tileSetTexture;
                                 SDL_FRect tileRect;
-                                tileRect.x = tileSet->GetRect(tileId).x;
-                                tileRect.y = tileSet->GetRect(tileId).y;
-                                tileRect.w = tileSet->GetRect(tileId).w;
-                                tileRect.h = tileSet->GetRect(tileId).h;
+
+
+
+                                if (tileSet->animations.count(tileSet->firstGid-tileId))
+                                {
+                                    // Tile animado
+
+                                    tileRect.x = tileSet->animations[tileSet->firstGid - tileId].GetCurrentFrame().x;
+                                    tileRect.y = tileSet->animations[tileSet->firstGid - tileId].GetCurrentFrame().y;
+                                    tileRect.w = tileSet->animations[tileSet->firstGid - tileId].GetCurrentFrame().w;
+                                    tileRect.h = tileSet->animations[tileSet->firstGid - tileId].GetCurrentFrame().h;
+                                }
+                                else
+                                {
+                                    // Tile estático
+
+                                    tileRect.x = tileSet->GetRect(tileId).x;
+                                    tileRect.y = tileSet->GetRect(tileId).y;
+                                    tileRect.w = tileSet->GetRect(tileId).w;
+                                    tileRect.h = tileSet->GetRect(tileId).h;
+                                }
+
+                                if (tileSet->name == "laser_turret")
+                                {
+                                    std::shared_ptr<Bullet> b = std::dynamic_pointer_cast<Bullet>(Engine::GetInstance().entityManager->CreateEntity(EntityType::BULLET));
+                                    b->position = Vector2D(tileRect.x, tileRect.y - tileRect.h/2);
+                                }
 
                                 //Get the screen coordinates from the tile coordinates
                                 Vector2D mapCoord = MapToWorld(i, j);
@@ -232,6 +242,31 @@ bool Map::Load(std::string path, std::string fileName)
 			//Load the tileset image
 			std::string imgName = tilesetNode.child("image").attribute("source").as_string();
             tileSet->texture = Engine::GetInstance().textures->Load((mapPath+imgName).c_str());
+
+            //Load animation
+            for (pugi::xml_node tileNode = tilesetNode.child("tile"); tileNode; tileNode = tileNode.next_sibling("tile"))
+            {
+                int tileId = tileNode.attribute("id").as_int();
+                pugi::xml_node animNode = tileNode.child("animation");
+
+                if (animNode)
+                {
+                    Animation anim;
+
+                    for (pugi::xml_node frameNode = animNode.child("frame"); frameNode; frameNode = frameNode.next_sibling("frame"))
+                    {
+                        int frameTileId = frameNode.attribute("tileid").as_int();
+                        int duration = frameNode.attribute("duration").as_int();
+
+                        SDL_Rect rect = tileSet->GetRect(tileSet->firstGid + frameTileId);
+                        anim.AddFrame(rect, duration);
+                    }
+
+                    anim.Reset();
+                    tileSet->animations[tileId] = anim; // guardar directamente
+                }
+            }
+
 
 			mapData.tilesets.push_back(tileSet);
 		}

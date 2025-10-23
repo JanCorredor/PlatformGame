@@ -4,7 +4,9 @@
 #include "Textures.h"
 #include "Scene.h"
 #include "Log.h"
+
 #include "Item.h"
+#include "Bullet.h"
 
 EntityManager::EntityManager() : Module()
 {
@@ -74,6 +76,9 @@ std::shared_ptr<Entity> EntityManager::CreateEntity(EntityType type)
 		break;
 	case EntityType::ITEM:
 		entity = std::make_shared<Item>();
+		break;
+	case EntityType::BULLET:
+		entity = std::make_shared<Bullet>();
 		break;
 	default:
 		break;
