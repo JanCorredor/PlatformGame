@@ -118,6 +118,33 @@ PhysBody* Physics::CreateCircle(int x, int y, int radious, bodyType type)
     sdef.enableContactEvents = true;
     sdef.enableSensorEvents = true;
 
+
+    b2CreateCircleShape(b, &sdef, &circle);
+
+    PhysBody* pbody = new PhysBody();
+    pbody->body = b;
+    b2Body_SetUserData(b, ToUserData(pbody));
+    return pbody;
+}
+
+PhysBody* Physics::CreateCircleNG(int x, int y, int radious, bodyType type)
+{
+    b2BodyDef def = b2DefaultBodyDef();
+    def.type = ToB2Type(type);
+    def.position = { PIXEL_TO_METERS(x), PIXEL_TO_METERS(y) };
+    def.gravityScale = 0.0f;
+
+    b2BodyId b = b2CreateBody(world, &def);
+
+    b2Circle circle;
+    circle.center = { 0.0f, 0.0f };
+    circle.radius = PIXEL_TO_METERS(radious);
+    b2ShapeDef sdef = b2DefaultShapeDef();
+    sdef.density = 1.0f;
+    sdef.enableContactEvents = true;
+    sdef.enableSensorEvents = true;
+  
+
     b2CreateCircleShape(b, &sdef, &circle);
 
     PhysBody* pbody = new PhysBody();

@@ -144,9 +144,12 @@ public:
 
     Vector2D GetMapSizeInPixels();
 
+    void DrawHelpMenu();
+
 public: 
     std::string mapFileName;
     std::string mapPath;
+    bool helpMenu = false;
 
 private:
     bool mapLoaded;

@@ -27,7 +27,7 @@ bool Bullet::Start() {
 
 	// L08 TODO 4: Add a physics to an item - initialize the physics body
 	Engine::GetInstance().textures.get()->GetSize(texture, texW, texH);
-	pbody = Engine::GetInstance().physics->CreateCircle((int)position.getX() + texH / 2, (int)position.getY() + texH / 2, texH / 3, bodyType::DYNAMIC);
+	pbody = Engine::GetInstance().physics->CreateCircleNG((int)position.getX() + texH / 2, (int)position.getY() + texH / 2, texH / 3, bodyType::DYNAMIC);
 
 	// L08 TODO 7: Assign collider type
 	pbody->ctype = ColliderType::BULLET;
@@ -43,8 +43,6 @@ bool Bullet::Update(float dt)
 	if (!active) return true;
 	b2Vec2 velocity = { -speed, 0 };
 	Engine::GetInstance().physics->SetLinearVelocity(pbody, velocity);
-	Engine::GetInstance().physics->ApplyLinearImpulseToCenter(pbody,0, -0.01f);
-
 
 	// L08 TODO 4: Add a physics to an item - update the position of the object from the physics.  
 	int x, y;
