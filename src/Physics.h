@@ -31,6 +31,7 @@ enum class ColliderType {
     PLATFORM,
     ENEMY,
     TRAP,
+    BULLET,
     UNKNOWN
     // ..
 };

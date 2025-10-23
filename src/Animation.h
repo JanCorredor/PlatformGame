@@ -20,6 +20,10 @@ public:
     const SDL_Rect& GetCurrentFrame() const;
     int GetFrameCount() const;
 
+
+    int GetCurrentIndex() { return currentIndex_; };
+    int GetTimeinFrame() { return timeInFrameMs_; };
+
 private:
     std::vector<AnimFrame> frames_;
     int currentIndex_ = 0;

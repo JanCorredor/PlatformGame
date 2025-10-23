@@ -313,6 +313,7 @@ void Player::OnCollision(PhysBody* physA, PhysBody* physB) {
 		break;
 	case ColliderType::TRAP:
 	case ColliderType::ENEMY:
+	case ColliderType::BULLET:
 		if (!isDying && !godMode)
 		{
 			anims.SetCurrent("death");

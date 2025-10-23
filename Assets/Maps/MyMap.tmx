@@ -4981,17 +4981,6 @@
    <tile/>
    <tile/>
    <tile/>
-   <tile gid="1610612827"/>
-   <tile gid="1610612827"/>
-   <tile gid="1610612827"/>
-   <tile/>
-   <tile/>
-   <tile/>
-   <tile/>
-   <tile/>
-   <tile/>
-   <tile/>
-   <tile/>
    <tile/>
    <tile/>
    <tile/>
@@ -5002,6 +4991,17 @@
    <tile gid="1610612827"/>
    <tile gid="1610612827"/>
    <tile gid="1610612827"/>
+   <tile/>
+   <tile/>
+   <tile/>
+   <tile/>
+   <tile/>
+   <tile gid="1610612827"/>
+   <tile gid="1610612827"/>
+   <tile gid="1610612827"/>
+   <tile/>
+   <tile/>
+   <tile/>
    <tile/>
    <tile/>
    <tile/>
@@ -9462,9 +9462,9 @@
   <object id="119" x="2176" y="625" width="96" height="15"/>
   <object id="120" x="1968" y="258.875" width="15" height="26.25"/>
   <object id="121" x="2080" y="258.875" width="15" height="26.25"/>
-  <object id="122" x="2472" y="384" width="23" height="32"/>
-  <object id="123" x="2472" y="544" width="23" height="32"/>
-  <object id="125" x="872.636" y="128" width="23" height="64"/>
+  <object id="122" x="2485" y="384" width="10" height="32"/>
+  <object id="123" x="2485" y="544" width="10" height="32"/>
+  <object id="125" x="885.636" y="128" width="10" height="64"/>
  </objectgroup>
  <objectgroup id="10" name="DeathCircleHitboxes">
   <properties>
@@ -9480,22 +9480,22 @@
   <object id="60" x="768" y="560" width="32" height="32">
    <ellipse/>
   </object>
-  <object id="61" x="96" y="48" width="32" height="32">
+  <object id="61" x="319.333" y="48" width="32" height="32">
    <ellipse/>
   </object>
-  <object id="62" x="32" y="48" width="32" height="32">
+  <object id="62" x="255.333" y="48" width="32" height="32">
    <ellipse/>
   </object>
-  <object id="63" x="64" y="48" width="32" height="32">
+  <object id="63" x="287.333" y="48" width="32" height="32">
    <ellipse/>
   </object>
-  <object id="64" x="672" y="48" width="32" height="32">
+  <object id="64" x="576" y="48" width="32" height="32">
    <ellipse/>
   </object>
-  <object id="65" x="608" y="48" width="32" height="32">
+  <object id="65" x="512" y="48" width="32" height="32">
    <ellipse/>
   </object>
-  <object id="66" x="640" y="48" width="32" height="32">
+  <object id="66" x="544" y="48" width="32" height="32">
    <ellipse/>
   </object>
  </objectgroup>

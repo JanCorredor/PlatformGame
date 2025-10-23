@@ -125,12 +125,6 @@ bool Map::Update(float dt)
                                     tileRect.h = tileSet->GetRect(tileId).h;
                                 }
 
-                                if (tileSet->name == "laser_turret")
-                                {
-                                    std::shared_ptr<Bullet> b = std::dynamic_pointer_cast<Bullet>(Engine::GetInstance().entityManager->CreateEntity(EntityType::BULLET));
-                                    b->position = Vector2D(tileRect.x, tileRect.y - tileRect.h/2);
-                                }
-
                                 //Get the screen coordinates from the tile coordinates
                                 Vector2D mapCoord = MapToWorld(i, j);
 
@@ -144,6 +138,17 @@ bool Map::Update(float dt)
                                     tileRect.w,
                                     tileRect.h
                                 };
+
+                                if (tileSet->name == "laser_turret")
+                                {
+                                    if (tileSet->animations[tileSet->firstGid - tileId].GetFrameCount() - tileSet->animations[tileSet->firstGid - tileId].GetCurrentIndex() == 6 && tileSet->animations[tileSet->firstGid - tileId].GetTimeinFrame() <= 20)// actual = 16 - x
+                                    {
+                                        std::shared_ptr<Bullet> b = std::dynamic_pointer_cast<Bullet>(Engine::GetInstance().entityManager->CreateEntity(EntityType::BULLET));
+                                        b->position = Vector2D((dstRect.x- dstRect.w * 3/4),(dstRect.y));
+                                        b->Start();
+                                    }
+
+                                }
 
                                 //Camera
                                 dstRect.x += Engine::GetInstance().render->camera.x;

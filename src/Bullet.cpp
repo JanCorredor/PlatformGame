@@ -23,14 +23,14 @@ bool Bullet::Awake() {
 bool Bullet::Start() {
 
 	//initilize textures
-	texture = Engine::GetInstance().textures->Load("Assets/Textures/goldCoin.png");
+	texture = Engine::GetInstance().textures->Load("Assets/Textures/bullet.png");
 
 	// L08 TODO 4: Add a physics to an item - initialize the physics body
 	Engine::GetInstance().textures.get()->GetSize(texture, texW, texH);
-	pbody = Engine::GetInstance().physics->CreateCircle((int)position.getX() + texH / 2, (int)position.getY() + texH / 2, texH / 2, bodyType::DYNAMIC);
+	pbody = Engine::GetInstance().physics->CreateCircle((int)position.getX() + texH / 2, (int)position.getY() + texH / 2, texH / 3, bodyType::DYNAMIC);
 
 	// L08 TODO 7: Assign collider type
-	pbody->ctype = ColliderType::TRAP;
+	pbody->ctype = ColliderType::BULLET;
 
 	// Set this class as the listener of the pbody
 	pbody->listener = this;   // so Begin/EndContact can call back to Item
@@ -42,15 +42,17 @@ bool Bullet::Update(float dt)
 {
 	if (!active) return true;
 	b2Vec2 velocity = { -speed, 0 };
-	//Engine::GetInstance().physics->SetLinearVelocity(pbody, velocity);
+	Engine::GetInstance().physics->SetLinearVelocity(pbody, velocity);
+	Engine::GetInstance().physics->ApplyLinearImpulseToCenter(pbody,0, -0.01f);
 
-	//// L08 TODO 4: Add a physics to an item - update the position of the object from the physics.  
-	//int x, y;
-	//pbody->GetPosition(x, y);
-	//position.setX((float)x);
-	//position.setY((float)y);
 
-	//Engine::GetInstance().render->DrawTexture(texture, x - texW / 2, y - texH / 2);
+	// L08 TODO 4: Add a physics to an item - update the position of the object from the physics.  
+	int x, y;
+	pbody->GetPosition(x, y);
+	position.setX((float)x);
+	position.setY((float)y);
+
+	Engine::GetInstance().render->DrawTexture(texture, x - texW / 2, y - texH / 2);
 
 	return true;
 }
@@ -61,6 +63,7 @@ void Bullet::OnCollision(PhysBody* physA, PhysBody* physB)
 	{
 	case ColliderType::PLATFORM:
 	case ColliderType::PLAYER:
+	case ColliderType::TRAP:
 		LOG("Bullet Collision");
 		Destroy();
 		break;
