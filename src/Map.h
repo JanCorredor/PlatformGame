@@ -145,6 +145,7 @@ public:
     Vector2D GetMapSizeInPixels();
 
     void DrawHelpMenu();
+    void SpawnGoldCoins();
 
 public: 
     std::string mapFileName;

@@ -10,6 +10,7 @@
 
 #include "EntityManager.h"
 #include "Bullet.h"
+#include "Item.h"
 
 Map::Map() : Module(), mapLoaded(false)
 {
@@ -45,7 +46,6 @@ bool Map::Update(float dt)
     }
 
     if (mapLoaded) {
-
         for (auto& tileset : mapData.tilesets)
         {
             for (auto it = tileset->animations.begin(); it != tileset->animations.end(); ++it)
@@ -55,21 +55,19 @@ bool Map::Update(float dt)
         }
         // L07 TODO 5: Prepare the loop to draw all tiles in a layer + DrawTexture()
         // iterate all tiles in a layer
-        for (const auto& mapLayer : mapData.layers) 
+        for (const auto& mapLayer : mapData.layers)
         {
             if (mapLayer->properties.GetProperty("Draw") != NULL and mapLayer->properties.GetProperty("Draw")->value)
             {
-                for (int i = 0; i < mapData.height; i++) 
+                for (int i = 0; i < mapData.height; i++)
                 {
-                    for (int j = 0; j < mapData.width; j++) 
+                    for (int j = 0; j < mapData.width; j++)
                     {
-                        // L07 TODO 9: Complete the draw function
-                    
                         //Get the gid from tile
                         uint32_t gid = mapLayer->Get(i, j);
 
                         //Check if the gid is different from 0 - some tiles are empty
-                        if (gid != 0) 
+                        if (gid != 0)
                         {
                             // Decode flip flags from GID
                             const uint32_t FLIPPED_HORIZONTALLY_FLAG = 0x80000000;
@@ -81,24 +79,24 @@ bool Map::Update(float dt)
                             bool flipH = (gid & FLIPPED_HORIZONTALLY_FLAG) != 0;
                             bool flipV = (gid & FLIPPED_VERTICALLY_FLAG) != 0;
                             bool flipD = (gid & FLIPPED_DIAGONALLY_FLAG) != 0;
-                            uint32_t tileId = gid & TILE_ID_MASK; 
+                            uint32_t tileId = gid & TILE_ID_MASK;
 
                             // Determine rotation and final horizontal flip
                             float rotation = 0.0f;
                             SDL_FlipMode sdlFlip = SDL_FLIP_NONE;
 
-                            if (!flipD) 
+                            if (!flipD)
                             {
-                                if (flipH && flipV) { rotation = 180.0f;}
-                                else if (flipH) { sdlFlip = SDL_FLIP_HORIZONTAL;}
+                                if (flipH && flipV) { rotation = 180.0f; }
+                                else if (flipH) { sdlFlip = SDL_FLIP_HORIZONTAL; }
                                 else if (flipV) { sdlFlip = SDL_FLIP_VERTICAL; }
                             }
                             else // Diagonal Flip  == True
-                            { 
+                            {
                                 if (!flipH && !flipV) { rotation = 90.0f; sdlFlip = SDL_FLIP_HORIZONTAL; }
-                                else if (flipH && !flipV) { rotation = 90.0f;}
-                                else if (!flipH && flipV) { rotation = 270.0f;}
-                                else if (flipH && flipV) { rotation = 270.0f; sdlFlip = SDL_FLIP_HORIZONTAL;}
+                                else if (flipH && !flipV) { rotation = 90.0f; }
+                                else if (!flipH && flipV) { rotation = 270.0f; }
+                                else if (flipH && flipV) { rotation = 270.0f; sdlFlip = SDL_FLIP_HORIZONTAL; }
                             }
 
                             //L09: TODO 3: Obtain the tile set using GetTilesetFromTileId
@@ -112,7 +110,7 @@ bool Map::Update(float dt)
 
 
 
-                                if (tileSet->animations.count(tileSet->firstGid-tileId))
+                                if (tileSet->animations.count(tileSet->firstGid - tileId))
                                 {
                                     // Tile animado
 
@@ -150,7 +148,7 @@ bool Map::Update(float dt)
                                     if (tileSet->animations[tileSet->firstGid - tileId].GetFrameCount() - tileSet->animations[tileSet->firstGid - tileId].GetCurrentIndex() == 6 && tileSet->animations[tileSet->firstGid - tileId].GetTimeinFrame() <= 20)// actual = 16 - x
                                     {
                                         std::shared_ptr<Bullet> b = std::dynamic_pointer_cast<Bullet>(Engine::GetInstance().entityManager->CreateEntity(EntityType::BULLET));
-                                        b->position = Vector2D((dstRect.x- dstRect.w * 3/4),(dstRect.y));
+                                        b->position = Vector2D((dstRect.x - dstRect.w * 3 / 4), (dstRect.y));
                                         b->Start();
                                     }
 
@@ -182,8 +180,7 @@ bool Map::Update(float dt)
 void Map::DrawHelpMenu()
 {
     SDL_Rect cam = Engine::GetInstance().render->camera;
-
-    SDL_Rect bG = { cam.x,cam.y, cam.w ,cam.h/15 };
+    SDL_Rect bG = { -cam.x,cam.y, cam.w,cam.h/15 };
     float dif = cam.w / 8;
 
     //Background
@@ -200,8 +197,37 @@ void Map::DrawHelpMenu()
     SDL_RenderDebugText(Engine::GetInstance().render->renderer, cam.w - dif*3, cam.h / 30, "F10 toggle GodMode");
     SDL_RenderDebugText(Engine::GetInstance().render->renderer, cam.w - dif*2, cam.h / 30, "F11 toggle 30Fps");
     SDL_RenderDebugText(Engine::GetInstance().render->renderer, cam.w - dif, cam.h / 30, "H to show HelpMenu");
+}
 
+void Map::SpawnGoldCoins()
+{
+    //SpawnGoldCoins
+    for (const auto& mapLayer : mapData.layers)
+    {
+        for (int i = 0; i < mapData.height; i++)
+        {
+            for (int j = 0; j < mapData.width; j++)
+            {
+                //Get the gid from tile
+                uint32_t gid = mapLayer->Get(i, j);
 
+                //Check if the gid is different from 0 - some tiles are empty
+                if (gid != 0)
+                {
+                    TileSet* tileSet = GetTilesetFromTileId(gid);
+
+                    if (tileSet != nullptr)
+                    {
+                        if (tileSet->name == "goldCoin")
+                        {
+                            std::shared_ptr<Item> item = std::dynamic_pointer_cast<Item>(Engine::GetInstance().entityManager->CreateEntity(EntityType::ITEM));
+                            item->position = Vector2D(MapToWorld(i, j).getX(), MapToWorld(i, j).getY());
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 
@@ -453,7 +479,6 @@ bool Map::Load(std::string path, std::string fileName)
                     }
                 }
             }
-
         }
 
         ret = true;

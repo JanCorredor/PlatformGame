@@ -41,7 +41,7 @@ bool Player::Start() {
 	//Engine::GetInstance().textures->GetSize(texture, texW, texH);
 	texW = 32;
 	texH = 32;
-	pbody = Engine::GetInstance().physics->CreateCircle((int)position.getX(), (int)position.getY(), texW / 2, bodyType::DYNAMIC);
+	pbody = Engine::GetInstance().physics->CreateCircle((int)position.getX(), (int)position.getY(), texW / 3, bodyType::DYNAMIC); //teW/2 OG Radius
 
 	// L08 TODO 6: Assign player class (using "this") to the listener of the pbody. This makes the Physics module to call the OnCollision method
 	pbody->listener = this;

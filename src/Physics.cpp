@@ -133,7 +133,7 @@ PhysBody* Physics::CreateCircleNG(int x, int y, int radious, bodyType type)
     def.type = ToB2Type(type);
     def.position = { PIXEL_TO_METERS(x), PIXEL_TO_METERS(y) };
     def.gravityScale = 0.0f;
-
+    
     b2BodyId b = b2CreateBody(world, &def);
 
     b2Circle circle;
@@ -143,7 +143,8 @@ PhysBody* Physics::CreateCircleNG(int x, int y, int radious, bodyType type)
     sdef.density = 1.0f;
     sdef.enableContactEvents = true;
     sdef.enableSensorEvents = true;
-  
+    
+    sdef.filter.groupIndex = -2;
 
     b2CreateCircleShape(b, &sdef, &circle);
 
